@@ -20,6 +20,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
     private var mediaType: MediaType? = null
     private var filePath: String = ""
     private var albumName: String = ""
+    private var subAlbumName: String = ""
     private var toDcim: Boolean = false
 
     private val job = Job()
@@ -39,6 +40,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
     ) {
         filePath = methodCall.argument<Any>(KEY_PATH)?.toString() ?: ""
         albumName = methodCall.argument<Any>(KEY_ALBUM_NAME)?.toString() ?: ""
+        subAlbumName = methodCall.argument<Any>(KEY_SUB_ALBUM_NAME)?.toString() ?: ""
         toDcim = methodCall.argument<Any>(KEY_TO_DCIM) as Boolean
         this.mediaType = mediaType
         this.pendingResult = result
@@ -63,25 +65,25 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
     private fun saveMediaFile() {
         uiScope.launch {
-            val success = async(Dispatchers.IO) {
+            val pathDeferred = async(Dispatchers.IO) {
                 if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName, toDcim)
+                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName, subAlbumName, toDcim)
                 } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName, toDcim)
+                    FileUtils.insertImage(activity.contentResolver, filePath, albumName, subAlbumName, toDcim)
                 }
             }
-            success.await()
-            finishWithSuccess()
+            val path = pathDeferred.await()
+            finishWithSuccess(path)
         }
     }
 
-    private fun finishWithSuccess() {
-        pendingResult!!.success(true)
+    private fun finishWithSuccess(path: String?) {
+        pendingResult!!.success(path)
         pendingResult = null
     }
 
     private fun finishWithFailure() {
-        pendingResult!!.success(false)
+        pendingResult!!.success(null)
         pendingResult = null
     }
 
@@ -107,6 +109,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
         private const val KEY_PATH = "path"
         private const val KEY_ALBUM_NAME = "albumName"
+        private const val KEY_SUB_ALBUM_NAME = "subAlbumName"
         private const val KEY_TO_DCIM = "toDcim"
     }
 }

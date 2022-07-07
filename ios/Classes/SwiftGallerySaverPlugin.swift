@@ -47,13 +47,13 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
                 if status == .authorized{
                     self._saveMediaToAlbum(path, mediaType, albumName, result)
                 } else {
-                    result(false);
+                    result(nil);
                 }
             })
         } else if status == .authorized {
             self._saveMediaToAlbum(path, mediaType, albumName, result)
         } else {
-            result(false);
+            result(nil);
         }
     }
     
@@ -67,13 +67,13 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             // create photos album
             createAppPhotosAlbum(albumName: albumName!) { (error) in
                 guard error == nil else {
-                    flutterResult(false)
+                    flutterResult(nil)
                     return
                     }
                 if let album = self.fetchAssetCollectionForAlbum(albumName!){
                     self.saveFile(imagePath, mediaType, album, flutterResult)
                 } else {
-                    flutterResult(false)
+                    flutterResult(nil)
                 }
             }
         }
@@ -95,9 +95,9 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             }
         }) { (success, error) in
             if success {
-                flutterResult(true)
+                flutterResult(filePath)
             } else {
-                flutterResult(false)
+                flutterResult(nil)
             }
         }
     }

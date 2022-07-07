@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   String firstButtonText = 'Take photo';
   String secondButtonText = 'Record video';
 
-  String albumName = 'Media';
+  String albumName = 'TrietAlbum';
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +83,10 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           firstButtonText = 'saving in progress...';
         });
-        GallerySaver.saveImage(recordedImage.path, albumName: albumName)
-            .then((bool success) {
+        GallerySaver.saveImage(recordedImage.path, albumName: albumName, subAlbumName: 'photo', toDcim: true)
+            .then((String path) {
           setState(() {
-            firstButtonText = 'image saved!';
+            firstButtonText = 'image saved in path:\n$path';
           });
         });
       }
@@ -101,10 +101,10 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           secondButtonText = 'saving in progress...';
         });
-        GallerySaver.saveVideo(recordedVideo.path, albumName: albumName)
-            .then((bool success) {
+        GallerySaver.saveVideo(recordedVideo.path, albumName: albumName, subAlbumName: 'video', toDcim: true)
+            .then((String path) {
           setState(() {
-            secondButtonText = 'video saved!';
+            secondButtonText = 'video saved\n$path';
           });
         });
       }
@@ -115,9 +115,9 @@ class _MyAppState extends State<MyApp> {
   void _saveNetworkVideo() async {
     String path =
         'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
-    GallerySaver.saveVideo(path, albumName: albumName).then((bool success) {
+    GallerySaver.saveVideo(path, albumName: albumName).then((String path) {
       setState(() {
-        print('Video is saved');
+        print('Video is saved:\n$path');
       });
     });
   }
@@ -126,9 +126,9 @@ class _MyAppState extends State<MyApp> {
   void _saveNetworkImage() async {
     String path =
         'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
-    GallerySaver.saveImage(path, albumName: albumName).then((bool success) {
+    GallerySaver.saveImage(path, albumName: albumName).then((String path) {
       setState(() {
-        print('Image is saved');
+        print('Image is saved:\n$path');
       });
     });
   }

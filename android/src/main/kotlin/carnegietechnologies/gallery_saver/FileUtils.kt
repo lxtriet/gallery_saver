@@ -41,8 +41,9 @@ internal object FileUtils {
         contentResolver: ContentResolver,
         path: String,
         folderName: String?,
+        subFolderName: String?,
         toDcim: Boolean
-    ): Boolean {
+    ): String? {
         val file = File(path)
         val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
@@ -58,7 +59,11 @@ internal object FileUtils {
         if (rotatedBytes != null) {
             source = rotatedBytes
         }
-        val albumDir = File(getAlbumFolderPath(folderName, MediaType.image, toDcim))
+        var albumName = folderName;
+        if(!subFolderName.isNullOrEmpty()) {
+            albumName += File.separator + subFolderName;
+        }
+        val albumDir = File(getAlbumFolderPath(albumName, MediaType.image, toDcim))
         val imageFilePath = File(albumDir, file.name).absolutePath
 
         val values = ContentValues()
@@ -74,7 +79,7 @@ internal object FileUtils {
         }
         else {
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, directory + File.separator + folderName)
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, directory + File.separator + albumName)
         }
 
         var imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -106,12 +111,12 @@ internal object FileUtils {
             }
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
-            return false
+            return null
         } catch (t: Throwable) {
-            return false
+            return null
         }
 
-        return true
+        return imageFilePath
     }
 
     /**
@@ -252,9 +257,10 @@ internal object FileUtils {
         contentResolver: ContentResolver,
         inputPath: String,
         folderName: String?,
+        subFolderName: String?,
         toDcim: Boolean,
         bufferSize: Int = BUFFER_SIZE
-    ): Boolean {
+    ): String? {
         val inputFile = File(inputPath)
         val inputStream: InputStream?
         val outputStream: OutputStream?
@@ -267,7 +273,11 @@ internal object FileUtils {
             directory = Environment.DIRECTORY_DCIM
         }
 
-        val albumDir = File(getAlbumFolderPath(folderName, MediaType.video, toDcim))
+        var albumName = folderName;
+        if(!subFolderName.isNullOrEmpty()) {
+            albumName += File.separator + subFolderName;
+        }
+        val albumDir = File(getAlbumFolderPath(albumName, MediaType.video, toDcim))
         val videoFilePath = File(albumDir, inputFile.name).absolutePath
 
         val values = ContentValues()
@@ -288,7 +298,7 @@ internal object FileUtils {
                 values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
             } catch(e: Exception) {}
         } else {
-            values.put(MediaStore.Video.Media.RELATIVE_PATH, directory + File.separator + folderName)
+            values.put(MediaStore.Video.Media.RELATIVE_PATH, directory + File.separator + albumName)
         }
 
         try {
@@ -309,12 +319,12 @@ internal object FileUtils {
             }
         } catch (fnfE: FileNotFoundException) {
             Log.e("GallerySaver", fnfE.message ?: fnfE.toString())
-            return false
+            return null
         } catch (e: Exception) {
             Log.e("GallerySaver", e.message ?: e.toString())
-            return false
+            return null
         }
-        return true
+        return videoFilePath
     }
 
     private fun getAlbumFolderPath(
